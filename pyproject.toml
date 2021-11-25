@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "hti-cnn"
+version = "0.1.0"
+description = "Ready to deliver"
+authors = ["Niall"]
+readme = "README.md"
+packages = [
+    { include = "*.py" },
+    { include = "**/*.py" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.10"
+pandas = "*"
+torchvision = "*"
+gpytorch = "*"
+pytorch-ignite = "*"
+tqdm = "*"
+torch = "*"
+tensorboard = "*"
+tensorboardX = "*"
+numpy = "*"
+scikit-learn = "^1.0.1"
+
+[tool.poetry.scripts]
+hti-cnn = "main:main"
+hti-cnn-feature = "main_feature_ensemble:main"
+
+[tool.mypy]
+python_version = "3.7"
+ignore_missing_imports = true
