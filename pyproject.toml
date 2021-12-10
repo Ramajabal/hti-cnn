@@ -29,3 +29,7 @@ hti-cnn-feature = "main_feature_ensemble:main"
 [tool.mypy]
 python_version = "3.7"
 ignore_missing_imports = true
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
