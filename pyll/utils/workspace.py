@@ -15,7 +15,7 @@ from pyll.utils.misc import make_sure_path_exists, zipdir, chmod, copydir, rmdir
 
 
 class Workspace(object):
-    def __init__(self, workspace: str = None, name: str = None, comment: str = None, resume: str = None):
+    def __init__(self, workspace: str = None, name: str = None, run_name: str = None, comment: str = None, resume: str = None):
         """
 
         :param workspace: str
@@ -25,6 +25,7 @@ class Workspace(object):
             will be part of the run specific working directory so don't use spaces or special chars
         """
         self.name = name
+        self.run_name = run_name
         self.comment = comment
         
         if resume is None:
@@ -63,11 +64,17 @@ class Workspace(object):
             chmod(workspace_root, 0o775)
         except PermissionError:
             print("PermissionError when trying to change permissions of workspace to 775")
-        
+
         # setup working directory
         experiment_dir = path.realpath("{}/{}".format(workspace_root, self.name))
-        timestamp = dt.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-        run_dir = path.realpath("{}/{}".format(experiment_dir, timestamp))
+
+        if not self.run_name:
+            timestamp = dt.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+            run_dir = path.realpath("{}/{}".format(experiment_dir, timestamp))
+        else:
+            timestamp = None
+            run_dir = path.realpath("{}/{}".format(experiment_dir, self.run_name))
+
         # Set up artifact folders
         results_dir = make_sure_path_exists("{}/results".format(run_dir))
         statistics_dir = make_sure_path_exists("{}/statistics".format(run_dir))

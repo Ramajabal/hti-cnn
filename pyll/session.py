@@ -54,7 +54,7 @@ class PyLL(object):
         if args.checkpoint:
             if os.path.isfile(args.checkpoint):
                 if enable_workspace:
-                    self.workspace = Workspace(resume=args.checkpoint)
+                    self.workspace = Workspace(run_name=args.run_name, resume=args.checkpoint)
                     print("Workspace: {}".format(self.workspace.workspace_dir))
                 print("=> loading checkpoint '{}'".format(args.checkpoint))
                 checkpoint = torch.load(args.checkpoint)
@@ -104,7 +104,8 @@ class PyLL(object):
         else:
             # Init Workspace
             if enable_workspace:
-                self.workspace = Workspace(config.get_value("workspace", "."), config.get_value("name", "run"), comment=config.get_value("comment", "None"))
+                self.workspace = Workspace(config.get_value("workspace", "."), config.get_value("name", "run"),
+                                           args.run_name, comment=config.get_value("comment", "None"))
                 print("Workspace: {}".format(self.workspace.workspace_dir))
             self.epoch, self.samples_seen = 0, 0
 
@@ -146,6 +147,8 @@ class PyLL(object):
                             help='evaluate model on validation set')
         parser.add_argument('-i', '--inference', type=str, metavar="DSET", default=None,
                             help='perform inference on specified dataset')
+        parser.add_argument('-r', '--run_name', type=str, default=None,
+                            help='run name used also as a name for the output directory')
         args, unknown_args = parser.parse_known_args()
         return args, unknown_args
 
