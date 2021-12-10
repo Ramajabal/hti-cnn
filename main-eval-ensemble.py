@@ -135,7 +135,8 @@ def validate_ensemble(
             input = batch["input"]
             target = batch["target"]
             sample_keys.extend(batch["ID"])
-            target = target.cuda(non_blocking=True)
+            if torch.cuda.is_available():
+                target = target.cuda(non_blocking=True)
 
             loss = 0.
             for j, model in enumerate(ensemble):

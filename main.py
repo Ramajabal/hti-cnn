@@ -33,21 +33,20 @@ def main():
         batchsize_eval = config.evaluation.batchsize
     else:
         batchsize_eval = config.training.batchsize
-
     # data loader
     loader_train = torch.utils.data.DataLoader(datasets["train"],
                                                batch_size=config.training.batchsize, shuffle=True,
                                                num_workers=config.workers, pin_memory=True,
-                                               persistent_workers=True, drop_last=False)
+                                               drop_last=False)
 
     eval_val = None
+
     if "val" in datasets:
         loader_val = torch.utils.data.DataLoader(datasets["val"],
                                                  batch_size=batchsize_eval, shuffle=False,
                                                  num_workers=config.workers, pin_memory=False,
-                                                 persistent_workers=True, drop_last=False)
+                                                 drop_last=False)
         eval_val = partial(validate, loader=loader_val, split_name="val", config=config, summary=summaries["val"], workspace=workspace)
-    
     if config.evaluate == "val":
         validate(loader_val, "val", model, 0, None, None)
     
@@ -75,9 +74,9 @@ def main():
             total_epochs = config.training.epochs
 
         for epoch in range(start_epoch, total_epochs):
+
             # train for one epoch
             train(session, loader_train, epoch, summaries["train"], ensemble_properties)
-
             if eval_val is not None:
                 # evaluate on validation set
                 performance = eval_val(model=session.model, samples_seen=(epoch + 1) * len(loader_train.dataset))
@@ -86,6 +85,8 @@ def main():
                 is_best = performance > best_performance
                 best_performance = max(performance, best_performance)
                 session.save_checkpoint(performance, is_best)
+            else:
+                performance = -1
 
             # If we're running an ensemble model, we need to save our component ensembles
             # at specific checkpoints along the way
@@ -150,7 +151,8 @@ def train(session: PyLL, loader, epoch, summary: SummaryWriter, ensemble_propert
         data_time.update(time.time() - end)
         input = batch["input"]
         target = batch["target"]
-        target = target.cuda(non_blocking=True)
+        if torch.cuda.is_available():
+            target = target.cuda(non_blocking=True)
 
         loss, output = session.train_step(input, target, epoch)
 
@@ -214,7 +216,8 @@ def validate(loader, split_name, model: TorchModel, config, samples_seen, summar
             input = batch["input"]
             target = batch["target"]
             sample_keys.extend(batch["ID"])
-            target = target.cuda(non_blocking=True)
+            if torch.cuda.is_available():
+                target = target.cuda(non_blocking=True)
 
             # compute output
             output = model(input)
